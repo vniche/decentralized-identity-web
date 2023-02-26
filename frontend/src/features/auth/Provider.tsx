@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-import { Wallet } from "./api";
+import { useMeQuery, Wallet } from "./api";
 import { BrowserProvider, ethers } from 'ethers';
 import { CompactEncrypt, importSPKI } from 'jose';
 import { Buffer } from 'buffer';
@@ -45,6 +45,7 @@ const publicKeyRaw = Buffer.from(REACT_APP_AUTH_API_PUBLIC_KEY || '', 'base64')
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const sessionToken = Cookies.get('WALLET_SESSION_ID');
+  const { data: wallet, isSuccess: walletSuccess } = useMeQuery();
   const navigate = useNavigate();
 
   const authenticate = async (provider: BrowserProvider) => {
@@ -76,14 +77,14 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const handleLogout = () => {
     Cookies.remove('WALLET_SESSION_ID');
-    navigate('/');
+    window.location.assign('/');
   };
 
   const value = {
     session: sessionToken,
     walletAvailable: !window.ethereum,
     provider: new ethers.BrowserProvider(window.ethereum),
-    wallet: defaultAuth.wallet,
+    wallet: walletSuccess ? wallet : defaultAuth.wallet,
     authenticate: authenticate,
     isAuthenticated: handleIsAuthenticated,
     logout: handleLogout

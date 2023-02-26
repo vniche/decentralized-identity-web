@@ -8,9 +8,15 @@ export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
     baseUrl: `${process.env.REACT_APP_AUTH_API_HOST || "http://localhost:1323"}`,
+    credentials: 'include'
   }),
-  endpoints: (/*{ query }*/) => ({
+  endpoints: ({ query }) => ({
+    me: query<Wallet, void>({
+      query: () => `/v1/me`,
+    }),
   }),
 })
 
-export const {} = authApi;
+export const {
+  useMeQuery
+} = authApi;

@@ -6,7 +6,9 @@ function App() {
   const {
     isAuthenticated,
     authenticate,
-    provider
+    logout,
+    provider,
+    wallet
   } = useAuth();
 
   return (
@@ -14,7 +16,14 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         {!isAuthenticated() &&
-          <button onClick={() => authenticate(provider)}>Connect</button>
+          <button onClick={() => authenticate(provider)}>Login</button>
+        }
+        {wallet &&
+          <>
+            <span>authenticated as {wallet.address}</span>
+            <span>(this info was loaded from auth service)</span>
+            <button onClick={() => logout()}>Logout</button>
+          </>
         }
       </header>
     </div >
