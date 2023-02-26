@@ -1,0 +1,10 @@
+@startuml
+actor User
+User -> Browser: Clicks Sign-In button
+Browser -> Wallet: Requests signature
+Browser <-- Wallet: Sign Sign-In request
+Browser -> API: Redirects to Authenticate endpoint with\n encrypted payload (containing address and signature)
+API -> API: Initiate session for User
+Browser <-- API: Redirect to redirect_uri with\n Set-Cookie for session and session ID
+User <-- Browser: Page loads with signed-in behavior
+@enduml
