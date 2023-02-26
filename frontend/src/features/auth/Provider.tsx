@@ -1,5 +1,4 @@
 import { createContext, ReactNode, useContext } from "react";
-import { useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
 import { useMeQuery, Wallet } from "./api";
 import { BrowserProvider, ethers } from 'ethers';
@@ -8,21 +7,21 @@ import { Buffer } from 'buffer';
 
 type Auth = {
   session: string | undefined;
-  walletAvailable: boolean;
+  providerAvailable: boolean;
   provider: BrowserProvider | undefined;
+  walletAvailable: boolean;
   wallet: Wallet | undefined;
   authenticate: Function;
-  isAuthenticated: Function;
   logout: Function;
 };
 
 export const defaultAuth: Auth = {
   session: undefined,
-  walletAvailable: false,
+  providerAvailable: false,
   provider: undefined,
+  walletAvailable: false,
   wallet: undefined,
   authenticate: () => { },
-  isAuthenticated: () => { },
   logout: () => { },
 };
 
@@ -45,8 +44,7 @@ const publicKeyRaw = Buffer.from(REACT_APP_AUTH_API_PUBLIC_KEY || '', 'base64')
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const sessionToken = Cookies.get('WALLET_SESSION_ID');
-  const { data: wallet, isSuccess: walletSuccess } = useMeQuery();
-  const navigate = useNavigate();
+  const { data: wallet, isSuccess: walletSuccess, isFetching: walletFetching } = useMeQuery();
 
   const authenticate = async (provider: BrowserProvider) => {
     const publicKey = await importSPKI(publicKeyRaw.toString(), 'RSA-OAEP-256');
@@ -71,10 +69,6 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     window.location.assign(`${REACT_APP_AUTH_API_HOST}/v1/authenticate?jwe=${encodeURIComponent(jwe)}`)
   };
 
-  const handleIsAuthenticated = () => {
-    return sessionToken !== undefined;
-  };
-
   const handleLogout = () => {
     Cookies.remove('WALLET_SESSION_ID');
     window.location.assign('/');
@@ -82,11 +76,11 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const value = {
     session: sessionToken,
-    walletAvailable: !window.ethereum,
+    providerAvailable: !window.ethereum,
     provider: new ethers.BrowserProvider(window.ethereum),
+    walletAvailable: (!walletFetching && walletSuccess) ? true : false,
     wallet: walletSuccess ? wallet : defaultAuth.wallet,
     authenticate: authenticate,
-    isAuthenticated: handleIsAuthenticated,
     logout: handleLogout
   };
 
